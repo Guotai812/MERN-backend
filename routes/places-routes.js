@@ -1,5 +1,6 @@
 const express = require('express');
 const { check } = require('express-validator');
+const mongoose = require("mongoose");
 
 const placesControllers = require('../controllers/places-controllers');
 
