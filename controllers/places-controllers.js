@@ -4,6 +4,7 @@ const { validationResult } = require("express-validator");
 const HttpError = require("../models/http-error");
 const getCoordsForAddress = require("../util/location");
 const Place = require("../models/place");
+const place = require("../models/place");
 
 let DUMMY_PLACES = [
   {
@@ -121,15 +122,17 @@ const updatePlace = async (req, res, next) => {
     return next(new HttpError("could not update data", 500));
   }
 
-  res.status(200).json({ place: place.toObject({getters: true}) });
+  res.status(200).json({ place: place.toObject({ getters: true }) });
 };
 
-const deletePlace = (req, res, next) => {
+const deletePlace = async(req, res, next) => {
   const placeId = req.params.pid;
-  if (!DUMMY_PLACES.find((p) => p.id === placeId)) {
-    throw new HttpError("Could not find a place for that id.", 404);
+  try {
+    await Place.deleteOne({ _id: placeId });
+  } catch (error) {
+    return next(new HttpError("fail to delete place", 500));
   }
-  DUMMY_PLACES = DUMMY_PLACES.filter((p) => p.id !== placeId);
+
   res.status(200).json({ message: "Deleted place." });
 };
 
