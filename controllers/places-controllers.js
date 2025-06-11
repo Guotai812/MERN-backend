@@ -33,7 +33,7 @@ const getPlacesByUserId = async (req, res, next) => {
 
   let places;
   try {
-    places = await Place.find({ creator: userId });
+    places = await User.findById(userId).populate("places");
   } catch (error) {
     return next(new HttpError("could not find this user", 500));
   }
@@ -45,7 +45,7 @@ const getPlacesByUserId = async (req, res, next) => {
   }
 
   res.json({
-    places: places.map((place) => place.toObject({ getters: true })),
+    places: places.places.map((place) => place.toObject({ getters: true })),
   });
 };
 
