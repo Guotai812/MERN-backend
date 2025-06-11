@@ -25,9 +25,6 @@ const getPlaceById = async (req, res, next) => {
   res.json({ place: place.toObject({ getters: true }) }); // => { place } => { place: place }
 };
 
-// function getPlaceById() { ... }
-// const getPlaceById = function() { ... }
-
 const getPlacesByUserId = async (req, res, next) => {
   const userId = req.params.uid;
 
@@ -39,7 +36,7 @@ const getPlacesByUserId = async (req, res, next) => {
   }
 
   if (!places || places.length === 0) {
-    return next(
+    return next( 
       new HttpError("Could not find places for the provided user id.", 404)
     );
   }
