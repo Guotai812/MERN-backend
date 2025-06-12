@@ -53,7 +53,7 @@ const signup = async (req, res, next) => {
     email,
     password,
     image: "asdasd",
-    places: []
+    places: [],
   });
 
   try {
@@ -84,7 +84,10 @@ const login = async (req, res, next) => {
     );
   }
 
-  res.json({ message: "Logged in!" });
+  res.json({
+    message: "Logged in!",
+    currentUser: identifiedUser.toObject({ getters: true }),
+  });
 };
 
 exports.getUsers = getUsers;
