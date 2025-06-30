@@ -1,5 +1,8 @@
+require("dotenv").config();
 const { validationResult } = require("express-validator");
 const User = require("../models/user");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const HttpError = require("../models/http-error");
 
@@ -39,10 +42,17 @@ const signup = async (req, res, next) => {
     );
   }
 
+  let hashedPassword;
+  try {
+    hashedPassword = await bcrypt.hash(password, 12);
+  } catch (error) {
+    return next(new HttpError("Could not create users", 500));
+  }
+
   const createddUser = new User({
     name,
     email,
-    password,
+    password: hashedPassword,
     image: req.file.path,
     places: [],
   });
@@ -53,7 +63,20 @@ const signup = async (req, res, next) => {
     return next(new HttpError("Signing up failed", 500));
   }
 
-  res.status(201).json({ user: createddUser.toObject({ getters: true }) });
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: createddUser.id, email: createddUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+  } catch (error) {
+    return next(new HttpError("Signing up failed", 500));
+  }
+
+  res
+    .status(201)
+    .json({ userId: createddUser.id, email: createddUser.email, token: token });
 };
 
 const login = async (req, res, next) => {
@@ -66,7 +89,20 @@ const login = async (req, res, next) => {
     return next(new HttpError("Failed to find this user!", 500));
   }
 
-  if (!identifiedUser || identifiedUser.password !== password) {
+  let isValidPassword = false;
+
+  try {
+    isValidPassword = await bcrypt.compare(password, identifiedUser.password);
+  } catch (error) {
+    return next(
+      new HttpError(
+        "Could not identify user, credentials seem to be wrong.",
+        500
+      )
+    );
+  }
+
+  if (!isValidPassword) {
     return next(
       new HttpError(
         "Could not identify user, credentials seem to be wrong.",
@@ -75,9 +111,21 @@ const login = async (req, res, next) => {
     );
   }
 
+  let token;
+  try {
+    token = jwt.sign(
+      { userId: identifiedUser.id, email: identifiedUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+  } catch (error) {
+    return next(new HttpError("Login failed", 500));
+  }
+
   res.json({
-    message: "Logged in!",
-    user: identifiedUser.toObject({ getters: true }),
+    userId: identifiedUser.id,
+    email: identifiedUser.email,
+    token: token,
   });
 };
 
