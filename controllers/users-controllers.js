@@ -3,15 +3,6 @@ const User = require("../models/user");
 
 const HttpError = require("../models/http-error");
 
-const DUMMY_USERS = [
-  {
-    id: "u1",
-    name: "Max Schwarz",
-    email: "test@test.com",
-    password: "testers",
-  },
-];
-
 const getUsers = async (req, res, next) => {
   let users;
   try {
@@ -86,7 +77,7 @@ const login = async (req, res, next) => {
 
   res.json({
     message: "Logged in!",
-    currentUser: identifiedUser.toObject({ getters: true }),
+    user: identifiedUser.toObject({ getters: true }),
   });
 };
 
