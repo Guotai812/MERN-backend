@@ -49,7 +49,7 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => {
-    app.listen(5001);
+    app.listen(process.env.PORT || 5001);
   })
   .catch((err) => {
     console.log(err);
