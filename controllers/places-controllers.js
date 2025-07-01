@@ -151,6 +151,10 @@ const deletePlace = async (req, res, next) => {
     return next(error);
   }
 
+  if (place.creator.id !== req.userData.userId) {
+    return next(new HttpError("You are not allowed delete this place!", 401));
+  }
+
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
