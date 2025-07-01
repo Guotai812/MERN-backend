@@ -36,7 +36,7 @@ const getPlacesByUserId = async (req, res, next) => {
   }
 
   if (!places || places.length === 0) {
-    return next( 
+    return next(
       new HttpError("Could not find places for the provided user id.", 404)
     );
   }
@@ -115,6 +115,10 @@ const updatePlace = async (req, res, next) => {
     return next(new HttpError("could not find this place!", 500));
   }
 
+  if (place.creator.toString() !== req.userData.userId) {
+    return next(new HttpError("You are not allowed to edit this place", 401));
+  }
+
   place.title = title;
   place.description = description;
 
@@ -134,12 +138,11 @@ const deletePlace = async (req, res, next) => {
   try {
     place = await Place.findById(placeId).populate("creator");
   } catch (err) {
-    
     const error = new HttpError(
       "Something went wrong, could not delete place.",
       500
     );
-    
+
     return next(error);
   }
 
